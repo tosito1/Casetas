@@ -1,0 +1,96 @@
+/* --- BoothNotificaciones.css --- */
+
+.notificaciones-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding-bottom: 5rem;
+}
+
+.notification-card {
+  padding: 2.5rem;
+  position: relative;
+  transition: all 0.4s var(--ease-out);
+  border-left: 1px solid var(--glass-border);
+  overflow: hidden;
+}
+
+.notification-card:hover {
+  transform: translateX(10px);
+  background: rgba(255, 255, 255, 0.05);
+  border-left-color: var(--color-gold);
+  box-shadow: var(--shadow-lg), var(--shadow-gold);
+}
+
+.notification-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 0;
+  background: var(--gradient-gold);
+  transition: height 0.4s var(--ease-out);
+}
+
+.notification-card:hover::before {
+  height: 100%;
+}
+
+.notif-date {
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+.notification-card h3 {
+  font-size: 1.6rem;
+  line-height: 1.2;
+  margin-top: 0.5rem;
+  background: linear-gradient(to right, #fff, var(--color-gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.notification-card p {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+/* --- Admin Form Specifics --- */
+.admin-action-form textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* Staggered Entrance Animation */
+.notificaciones-list > div {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s var(--ease-out) forwards;
+}
+
+.notificaciones-list > div:nth-child(1) { animation-delay: 0.1s; }
+.notificaciones-list > div:nth-child(2) { animation-delay: 0.2s; }
+.notificaciones-list > div:nth-child(3) { animation-delay: 0.3s; }
+.notificaciones-list > div:nth-child(4) { animation-delay: 0.4s; }
+.notificaciones-list > div:nth-child(5) { animation-delay: 0.5s; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .notification-card {
+    padding: 1.5rem;
+  }
+  
+  .notification-card h3 {
+    font-size: 1.3rem;
+  }
+  
+  .targeting-controls-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}

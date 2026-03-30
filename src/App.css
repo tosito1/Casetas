@@ -1,0 +1,57 @@
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main-content {
+  flex: 1;
+  padding: 2rem 1rem;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.content-container {
+  display: block;
+  min-height: 80vh;
+  width: 100%;
+}
+
+.fade-in {
+  animation: fadeIn 0.8s ease-out forwards;
+  width: 100%;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.simple-footer {
+  padding: 3rem 1rem;
+  text-align: center;
+  background: white;
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+.simple-footer p {
+  color: #888;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Base Responsive */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem 0.5rem;
+  }
+}
+
+
+/* Base Responsive */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem 0.5rem;
+  }
+}

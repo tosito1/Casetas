@@ -1,0 +1,255 @@
+/* ========================================
+   BOOTH DASHBOARD - Premium Feria Theme
+   ======================================== */
+
+.booth-dashboard-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  min-height: calc(100vh - 140px);
+  gap: 0;
+  padding: 0;
+  width: 100%;
+}
+
+/* --- Sidebar (Vertical on Desktop) --- */
+.booth-sidebar {
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  height: calc(100vh - 100px);
+  position: sticky;
+  top: 100px;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(12px);
+  border-right: 1px solid var(--glass-border);
+  z-index: 10;
+}
+
+.booth-id-card {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.sidebar-booth-thumb {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--color-gold);
+}
+
+.booth-meta h4 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+}
+
+/* --- Navigation --- */
+.booth-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.booth-nav button {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.1rem 1.4rem;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.3s var(--ease-out);
+  text-align: left;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.booth-nav button .icon {
+  font-size: 1.4rem;
+  opacity: 0.7;
+}
+
+.booth-nav button:hover {
+  background: var(--glass-bg-hover);
+  color: var(--text-primary);
+  transform: translateX(10px);
+}
+
+.booth-nav button.active {
+  background: var(--gradient-red);
+  color: var(--color-white);
+  box-shadow: var(--shadow-red);
+}
+
+.nav-divider {
+  height: 1px;
+  background: var(--glass-border);
+  margin: 1rem 0;
+}
+
+/* --- Main content --- */
+.booth-main-content {
+  min-width: 0;
+  width: 100%;
+  padding: 2.5rem;
+  overflow-x: hidden;
+}
+
+/* --- Responsive Layout overhaul --- */
+@media (max-width: 1100px) {
+  .booth-dashboard-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .booth-sidebar {
+    position: sticky;
+    top: 80px;
+    height: auto;
+    padding: 1.5rem 2rem;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    border-right: none;
+    border-bottom: 1px solid var(--glass-border);
+    background: var(--bg-secondary);
+    gap: 1rem;
+  }
+
+  .booth-id-card {
+    padding-bottom: 0;
+    border-bottom: none;
+    flex-shrink: 0;
+  }
+
+  .booth-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    flex-grow: 1;
+    justify-content: flex-end;
+    padding-bottom: 0;
+    scrollbar-width: none;
+    gap: 0.5rem;
+  }
+  .booth-nav::-webkit-scrollbar { display: none; }
+
+  .booth-nav button {
+    padding: 0.8rem 1.2rem;
+    white-space: nowrap;
+    gap: 0.8rem;
+  }
+  
+  .nav-divider { display: none; }
+}
+
+@media (max-width: 768px) {
+  .booth-dashboard-layout {
+    display: block; /* Safer for older devices */
+    width: 100%;
+  }
+
+  .booth-sidebar {
+    position: sticky;
+    top: 0; /* Let it stick to the top of the container correctly */
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: 0.75rem 0.5rem;
+    flex-direction: row; /* Horizontal on mobile at the top */
+    background: rgba(10, 10, 15, 0.8);
+    backdrop-filter: blur(25px);
+    border-top: 1px solid var(--glass-border);
+    border-bottom: 1px solid var(--glass-border-strong);
+    z-index: 99;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.6);
+    margin-bottom: 1rem;
+  }
+
+  .booth-id-card { display: none; }
+  
+  /* Role card container */
+  .booth-sidebar > div:last-child { display: none; }
+
+  .booth-nav {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-around;
+    padding: 0 0.25rem;
+    gap: 0;
+  }
+
+  .booth-nav button {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.4rem 0.25rem;
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    text-align: center;
+    flex: 1;
+    min-width: 0;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: var(--text-muted);
+  }
+  
+  .booth-nav button.active {
+    color: var(--color-gold);
+    background: rgba(212, 175, 55, 0.05) !important;
+    border-radius: var(--radius-sm);
+  }
+
+  .booth-nav button .icon {
+    font-size: 1.3rem;
+    margin-bottom: 2px;
+  }
+
+  .booth-nav button.active {
+    color: var(--color-gold);
+    background: transparent !important;
+  }
+
+  .booth-nav button:hover {
+    transform: none;
+  }
+
+  .booth-main-content {
+    padding: 1.5rem;
+    padding-bottom: 40px; 
+  }
+}
+
+/* Common premium elements used in booth views */
+.premium-title {
+  font-family: var(--font-serif);
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.widget {
+  padding: 2.5rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+}
+
+@media (max-width: 768px) {
+  .widget {
+    padding: 1.5rem;
+  }
+  .premium-title {
+    font-size: 2.2rem;
+  }
+}

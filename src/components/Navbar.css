@@ -1,0 +1,363 @@
+/* === Navbar 2025 - Floating Island Design === */
+
+.navbar {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 2rem);
+  max-width: 1300px;
+  height: 64px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  padding: 0 1.25rem;
+  
+  /* Floating island effect */
+  background: rgba(13, 13, 18, 0.75);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-xl);
+  box-shadow: 
+    0 8px 32px rgba(0,0,0,0.5),
+    0 0 0 1px rgba(255,255,255,0.04) inset,
+    0 1px 0 rgba(255,255,255,0.08) inset;
+  
+  animation: slideDownNav 0.6s var(--ease-out) both;
+}
+
+@keyframes slideDownNav {
+  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 1rem;
+}
+
+/* === Logo === */
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.nav-logo h1 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-family: var(--font-serif);
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  transition: opacity var(--dur-fast) var(--ease-smooth);
+}
+
+.nav-logo:hover h1 { opacity: 0.8; }
+
+.logo-img {
+  transition: transform var(--dur-med) var(--ease-spring);
+}
+
+.nav-logo:hover .logo-img {
+  transform: rotate(15deg) scale(1.1);
+}
+
+.highlight {
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* === Nav Links === */
+.nav-links {
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  flex: 1;
+  justify-content: center;
+}
+
+.nav-item {
+  position: relative;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.85rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  transition: all var(--dur-med) var(--ease-smooth);
+  letter-spacing: 0.01em;
+}
+
+.nav-item:hover {
+  color: var(--text-primary);
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+}
+
+.nav-item.active {
+  color: var(--color-black);
+  font-weight: 700;
+  background: var(--gradient-gold);
+  border-color: transparent;
+  box-shadow: 0 4px 16px rgba(212,175,55,0.35);
+}
+
+/* Indicator dot for active tab on mobile/desktop hover */
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  box-shadow: 0 0 8px var(--color-gold);
+}
+
+/* Special styling for different button types */
+.request-btn { color: #f1c40f; border: 1px solid rgba(241, 196, 15, 0.2) !important; }
+.member-btn { color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.2) !important; }
+.admin-btn { color: var(--color-gold); border: 1px dashed rgba(212, 175, 55, 0.4) !important; }
+
+/* === Nav Actions === */
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--gradient-gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.8rem;
+  color: var(--color-black);
+  flex-shrink: 0;
+  box-shadow: 0 0 12px rgba(212,175,55,0.3);
+}
+
+.user-name {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+/* --- Signature Logout Button (Premium) --- */
+.Btn-logout {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  background: var(--gradient-red);
+  margin-left: 0.5rem;
+  box-shadow: 0 4px 15px rgba(196, 30, 58, 0.3);
+}
+
+.Btn-logout .logout-sign {
+  width: 100%;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.Btn-logout .logout-sign svg {
+  width: 18px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.Btn-logout .logout-sign svg path {
+  fill: white;
+}
+
+.Btn-logout .logout-text {
+  position: absolute;
+  right: 0%;
+  width: 0%;
+  opacity: 0;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
+.Btn-logout:hover {
+  width: 130px;
+  border-radius: 12px;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(196, 30, 58, 0.5);
+}
+
+.Btn-logout:hover .logout-sign {
+  width: 35%;
+  padding-left: 10px;
+}
+
+.Btn-logout:hover .logout-text {
+  opacity: 1;
+  width: 65%;
+  padding-right: 12px;
+}
+
+.Btn-logout:active {
+  transform: scale(0.95);
+}
+
+/* === Hamburger Menu === */
+.hamburger-btn {
+  display: none;
+  cursor: pointer;
+  z-index: 1001;
+  padding: 0.5rem;
+}
+
+.hamburger-icon {
+  width: 24px;
+  height: 20px;
+  position: relative;
+}
+
+.hamburger-icon span {
+  display: block;
+  position: absolute;
+  height: 2.5px;
+  width: 100%;
+  background: var(--color-gold);
+  border-radius: 3px;
+  left: 0;
+  transition: .4s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+}
+
+.hamburger-icon span:nth-child(1) { top: 0px; }
+.hamburger-icon span:nth-child(2) { top: 8px; width: 70%; }
+.hamburger-icon span:nth-child(3) { top: 16px; }
+
+.hamburger-icon.open span:nth-child(1) {
+  top: 8px;
+  transform: rotate(135deg);
+}
+.hamburger-icon.open span:nth-child(2) {
+  opacity: 0;
+  left: -20px;
+}
+.hamburger-icon.open span:nth-child(3) {
+  top: 8px;
+  transform: rotate(-135deg);
+}
+
+/* === Mobile Responsive Overhaul === */
+@media (max-width: 900px) {
+  .hamburger-btn { display: block; }
+  .user-name { display: none; }
+
+  .nav-links {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 280px;
+    height: 100vh;
+    background: rgba(10, 10, 15, 0.95);
+    backdrop-filter: blur(40px) saturate(200%);
+    -webkit-backdrop-filter: blur(40px) saturate(200%);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    flex-direction: column;
+    padding: 100px 2rem 2rem;
+    gap: 1rem;
+    justify-content: flex-start;
+    align-items: flex-start;
+    
+    transform: translateX(100%);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: -20px 0 60px rgba(0,0,0,0.8);
+    z-index: 999;
+  }
+  
+  .nav-links.open {
+    transform: translateX(0);
+  }
+  
+  .nav-item {
+    width: 100%;
+    padding: 1.2rem;
+    font-size: 1.1rem;
+    border-radius: var(--radius-md);
+    background: rgba(255,255,255,0.03);
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    opacity: 0;
+    transform: translateX(20px);
+    transition: all 0.4s var(--ease-out);
+  }
+
+  .nav-links.open .nav-item {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Staggered entrance for items */
+  .nav-links.open .nav-item:nth-child(1) { transition-delay: 0.1s; }
+  .nav-links.open .nav-item:nth-child(2) { transition-delay: 0.15s; }
+  .nav-links.open .nav-item:nth-child(3) { transition-delay: 0.2s; }
+  .nav-links.open .nav-item:nth-child(4) { transition-delay: 0.25s; }
+  .nav-links.open .nav-item:nth-child(5) { transition-delay: 0.3s; }
+
+  .nav-item.active {
+    background: var(--gradient-gold);
+    color: var(--color-black);
+    padding-left: 1.5rem;
+  }
+
+  .nav-item.active::after {
+    display: none; /* No dot on mobile active cards */
+  }
+
+  .navbar {
+    top: 0.5rem;
+    width: calc(100% - 1rem);
+    height: 60px;
+    border-radius: var(--radius-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .nav-logo h1 { font-size: 1rem; }
+  .Btn-logout { width: 36px; height: 36px; }
+  .nav-logo h1 span { display: none; } /* Show only "Mi" on very small screens or keep it? Let's hide span for super clean h1 */
+}
