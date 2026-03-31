@@ -23,9 +23,270 @@
   width: 100%;
 }
 
+/* === Map Header Controls (Admin) === */
+.map-header-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+  width: 100%;
+  animation: fadeIn 0.8s ease-out 0.2s backwards;
+}
+
+.admin-map-switcher {
+  background: rgba(13, 13, 18, 0.95);
+  backdrop-filter: blur(20px);
+  padding: 0.45rem;
+  border-radius: var(--radius-full);
+  display: flex;
+  gap: 0.5rem;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 20px rgba(212, 175, 55, 0.15);
+}
+
+.admin-map-switcher button {
+  padding: 0.75rem 1.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.5);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.4s var(--ease-spring);
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.admin-map-switcher button:hover {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.admin-map-switcher button.active {
+  background: var(--gradient-gold);
+  color: var(--color-black);
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+  transform: scale(1.05);
+}
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Collapsible Map Footers === */
+.map-footer-collapsible,
+.outside-users-collapsible {
+  margin-top: 1.5rem;
+  overflow: hidden;
+  transition: all 0.4s var(--ease-out);
+}
+
+.collapsible-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 2rem;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.3s;
+}
+
+.collapsible-header:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-title .icon {
+  font-size: 1.2rem;
+}
+
+.header-title h4 {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  letter-spacing: 2px;
+  font-weight: 800;
+}
+
+.count-badge {
+  background: var(--gradient-gold);
+  color: var(--color-black);
+  padding: 0.1rem 0.6rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 900;
+  margin-left: 0.5rem;
+}
+
+.chevron {
+  color: var(--color-gold);
+  font-size: 0.8rem;
+  transition: transform 0.4s var(--ease-spring);
+}
+
+.chevron.up { transform: rotate(180deg); }
+.chevron.down { transform: rotate(0deg); }
+
+/* === Feature Discovery HUD (Mobile/Guest) === */
+.feature-discovery-hud {
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  text-align: center;
+  border: 1px solid var(--color-gold-half);
+  background: rgba(212, 175, 55, 0.03);
+}
+
+.discovery-text {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 1.25rem;
+  letter-spacing: 0.5px;
+}
+
+.discovery-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+}
+
+.discovery-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s var(--ease-smooth);
+  padding: 0.5rem;
+  border-radius: var(--radius-lg);
+  min-width: 80px;
+}
+
+.discovery-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-3px);
+}
+
+.discovery-btn .icon {
+  font-size: 1.5rem;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+}
+
+.discovery-btn .label {
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: var(--color-gold);
+}
+
+.discovery-btn.highlight {
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+@media (max-width: 600px) {
+  .discovery-actions { gap: 1rem; }
+  .discovery-btn { min-width: 70px; }
+  .discovery-text { font-size: 0.75rem; }
+}
+
+/* === Map Booth List (Collapsible content) === */
+.map-booth-list {
+  padding: 0 2rem 2rem;
+}
+
+.booth-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+/* Custom scrollbar for booth list */
+.booth-list-grid::-webkit-scrollbar { width: 6px; }
+.booth-list-grid::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+.booth-list-grid::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.2); border-radius: 10px; }
+
+.booth-list-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.03);
+  transition: all 0.3s var(--ease-smooth);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.booth-list-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(212, 175, 55, 0.3);
+  transform: translateY(-2px);
+}
+
+.card-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.badge-pill {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 900;
+  color: white;
+}
+
+.badge-pill.publica { background: #BB242B; }
+.badge-pill.privada { background: #004724; }
+.badge-pill.peña { background: #D4AF37; color: black; }
+
+.name-group h6 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.name-group p {
+  margin: 0;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.view-btn.icon-only {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(212,175,55,0.3);
+  background: rgba(212,175,55,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 1.1rem;
+}
+
+.view-btn.icon-only:hover {
+  background: var(--gradient-gold);
+  border-color: transparent;
+  transform: scale(1.1);
 }
 
 .simple-footer {

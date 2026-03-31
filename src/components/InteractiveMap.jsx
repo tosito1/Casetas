@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import './InteractiveMap.css';
 import { ROLES } from '../data/data';
 import { MAP_CONFIGS, gpsToPixel, pixelToGps } from '../data/mapConfigs';
 import ThemeSwitch from './ThemeSwitch';
 
 
-const InteractiveMap = ({ 
+const InteractiveMap = forwardRef(({ 
   casetas: firestoreCasetas, 
   onSelectCaseta,
   currentUser,
@@ -17,10 +17,21 @@ const InteractiveMap = ({
   onMapTypeChange,
   isTracking = true,
   onToggleTracking
-}) => {
+}, ref) => {
   const containerRef = useRef(null);
   const [hoveredId, setHoveredId] = useState(null);
   const [selectedCaseta, setSelectedCaseta] = useState(null);
+
+  // Expose methods to parent
+  useImperativeHandle(ref, () => ({
+    selectAndZoom: (caseta) => {
+      setSelectedCaseta(caseta);
+      const mapDef = activeConfig.boothDefinitions.find(d => String(d.id) === String(caseta.numero));
+      if (mapDef) {
+         smoothPanTo(mapDef.x + mapDef.w / 2, mapDef.y + mapDef.h / 2, 1.8);
+      }
+    }
+  }));
   
   // --- ZOOM & PAN STATE ---
   const [transform, setTransform] = useState({ scale: 0.7, x: 0, y: 0 });
@@ -92,8 +103,12 @@ const InteractiveMap = ({
   const smoothPanTo = (mapX, mapY, targetScale = 1.6) => {
     if (!containerRef.current) return;
     const { clientWidth, clientHeight } = containerRef.current;
-    const newX = (clientWidth / 2) - (mapX * targetScale);
-    const newY = (clientHeight / 2) - (mapY * targetScale);
+    const [minX, minY] = activeConfig.viewBox.split(' ').map(Number);
+    
+    // Centrar considerando el offset del viewBox
+    const newX = (clientWidth / 2) - (mapX - minX) * targetScale;
+    const newY = (clientHeight / 2) - (mapY - minY) * targetScale;
+    
     setTransform({ scale: targetScale, x: newX, y: newY });
   };
 
@@ -262,20 +277,17 @@ const InteractiveMap = ({
       {/* --- FILTROS (Segmented on Mobile) --- */}
       <div className="map-ui-bottom-left">
         <div className="filter-chips">
-          <button className={`chip ${visibleTypes.includes('Publica') ? 'active' : ''}`} onClick={() => toggleFilter('Publica')}>Públicas</button>
-          <button className={`chip ${visibleTypes.includes('Privada') ? 'active' : ''}`} onClick={() => toggleFilter('Privada')}>Privadas</button>
-          <button className={`chip ${visibleTypes.includes('Peña') ? 'active' : ''}`} onClick={() => toggleFilter('Peña')}>Peñas</button>
+          <button className={`chip ${visibleTypes.includes('Publica') ? 'active' : 'inactive'}`} onClick={() => toggleFilter('Publica')}>
+            Públicas {!visibleTypes.includes('Publica') && <span className="close-x">✕</span>}
+          </button>
+          <button className={`chip ${visibleTypes.includes('Privada') ? 'active' : 'inactive'}`} onClick={() => toggleFilter('Privada')}>
+            Privadas {!visibleTypes.includes('Privada') && <span className="close-x">✕</span>}
+          </button>
+          <button className={`chip ${visibleTypes.includes('Peña') ? 'active' : 'inactive'}`} onClick={() => toggleFilter('Peña')}>
+            Peñas {!visibleTypes.includes('Peña') && <span className="close-x">✕</span>}
+          </button>
         </div>
       </div>
-
-      {currentUser?.rol === ROLES.GLOBAL_ADMIN && onMapTypeChange && (
-        <div className="map-ui-bottom-center-admin">
-          <div className="admin-map-switcher pill-selector">
-            <button className={mapType === 'sanjuan' ? 'active' : ''} onClick={() => onMapTypeChange('sanjuan')}>SAN JUAN</button>
-            <button className={mapType === 'feria' ? 'active' : ''} onClick={() => onMapTypeChange('feria')}>FERIA</button>
-          </div>
-        </div>
-      )}
 
       <div 
         className={`map-scroll-container ${isDragging ? 'is-dragging' : ''}`}
@@ -493,7 +505,6 @@ const InteractiveMap = ({
           </g>
         </svg>
 
-        {/* Floating Zoom Controls */}
         <div className="map-zoom-hud">
           <button onClick={() => setTransform(p => ({ ...p, scale: Math.min(p.scale + 0.3, 3) }))}>+</button>
           <div className="hud-sep"></div>
@@ -520,11 +531,6 @@ const InteractiveMap = ({
                 <button className="sheet-btn gold" onClick={() => { onSelectCaseta(selectedCaseta); setSelectedCaseta(null); }}>
                   ✨ Ver Detalles
                 </button>
-                {currentUser && (
-                   <button className="sheet-btn secondary" onClick={handleLocateMe}>
-                     🚀 Ruta
-                   </button>
-                )}
               </div>
             </div>
           </div>
@@ -532,6 +538,6 @@ const InteractiveMap = ({
       </div>
     </div>
   );
-};
+});
 
 export default InteractiveMap;

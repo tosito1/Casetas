@@ -7,10 +7,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -44,41 +46,83 @@ fun MainHomeScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .statusBarsPadding()
                 .padding(padding)
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(BgPrimary, Color.Black)
                     )
                 )
-                .padding(24.dp)
         ) {
-            // Header
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            // Header with Search Bar
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column {
-                    Text(
-                        "BIENVENIDO",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Gold,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 2.sp
-                    )
-                    Text(
-                        "Mi Caseta Pro",
-                        style = MaterialTheme.typography.headlineMedium,
-                        color = TextPrimary,
-                        fontWeight = FontWeight.Black
-                    )
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            "MI PORTAL",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Gold,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 2.sp
+                        )
+                        Text(
+                            "Mi Caseta",
+                            style = MaterialTheme.typography.headlineMedium,
+                            color = TextPrimary,
+                            fontWeight = FontWeight.Black
+                        )
+                    }
+                    IconButton(onClick = onOpenProfile) {
+                        Icon(androidx.compose.material.icons.Icons.Default.Person, contentDescription = "Perfil", tint = Gold)
+                    }
                 }
-                IconButton(onClick = onOpenProfile) {
-                    Icon(androidx.compose.material.icons.Icons.Default.Person, contentDescription = "Perfil", tint = Gold)
-                }
+
+                // IN-HEADER SEARCH BAR
+                val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+                val searchQuery by listViewModel.searchQuery.collectAsState()
+                
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { listViewModel.onSearchQueryChange(it) },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("Buscar caseta o calle...", color = TextSecondary, fontSize = 14.sp) },
+                    leadingIcon = { Icon(androidx.compose.material.icons.Icons.Default.Search, contentDescription = null, tint = Gold, modifier = Modifier.size(20.dp)) },
+                    trailingIcon = { 
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { listViewModel.onSearchQueryChange("") }) {
+                                Icon(androidx.compose.material.icons.Icons.Default.Close, contentDescription = "Limpiar", tint = Gold)
+                            }
+                        }
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Gold,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                        focusedContainerColor = Color.White.copy(alpha = 0.05f),
+                        unfocusedContainerColor = Color.White.copy(alpha = 0.05f),
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    singleLine = true,
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        imeAction = androidx.compose.ui.text.input.ImeAction.Search
+                    ),
+                    keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                        onSearch = { focusManager.clearFocus() }
+                    )
+                )
             }
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(16.dp))
 
             // SECTION 1: MAPA INTERACTIVO
             Text(
@@ -169,8 +213,10 @@ fun MainHomeScreen(
             )
             Spacer(Modifier.height(16.dp))
 
+            val filteredCasetas by listViewModel.filteredCasetas.collectAsState(initial = emptyList())
+
             LazyColumn(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                items(casetas) { booth ->
+                items(filteredCasetas) { booth ->
                     BoothListItem(booth.nombre, booth.descripcion ?: "Caseta oficial") {
                         onOpenBooth(booth.id)
                     }

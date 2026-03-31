@@ -5,25 +5,36 @@ import { ROLES } from '../data/data';
 import AdminApproval from './AdminApproval';
 import AddCasetaForm from './AddCasetaForm';
 
-const AdminDashboard = ({ casetas, onAddCaseta }) => {
-  const [activeView, setActiveView] = useState('stats');
+const AdminDashboard = ({ casetas: allCasetas, onAddCaseta, currentUser }) => {
+  const isGlobalAdmin = currentUser?.rol === ROLES.GLOBAL_ADMIN;
+  const [activeView, setActiveView] = useState(isGlobalAdmin ? 'stats' : 'booths');
   const [socios, setSocios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingCaseta, setEditingCaseta] = useState(null);
 
+  // Filter casetas based on role
+  const casetas = isGlobalAdmin 
+    ? allCasetas 
+    : allCasetas.filter(c => c.id === currentUser?.casetaId);
+
   useEffect(() => {
     const unsubscribe = boothService.listenToAllSocios((data) => {
-      setSocios(data);
+      // Filter socios based on role
+      const filteredSocios = isGlobalAdmin 
+        ? data 
+        : data.filter(s => s.casetaId === currentUser?.casetaId);
+        
+      setSocios(filteredSocios);
       setLoading(false);
     });
     return () => unsubscribe();
-  }, []);
+  }, [isGlobalAdmin, currentUser?.casetaId]);
 
   const stats = {
     totalCasetas: casetas.length,
     totalSocios: socios.length,
     pendingSocios: socios.filter(s => !s.approved && s.casetaId).length,
-    pendingAppUsers: socios.filter(s => !s.approved).length,
+    pendingAppUsers: isGlobalAdmin ? socios.filter(s => !s.approved).length : 0,
     publicas: casetas.filter(c => c.clase === 'Publica').length,
     privadas: casetas.filter(c => c.clase === 'Privada').length,
     peñas: casetas.filter(c => c.clase === 'Peña').length
@@ -58,17 +69,19 @@ const AdminDashboard = ({ casetas, onAddCaseta }) => {
       {/* Sidebar Navigation */}
       <aside className="admin-sidebar glass-panel">
         <div className="admin-sidebar-header">
-          <span className="admin-icon">🛡️</span>
-          <h3>Panel Control</h3>
+          <span className="admin-icon">{isGlobalAdmin ? '🛡️' : '🛖'}</span>
+          <h3>{isGlobalAdmin ? 'Panel Control' : 'Mi Caseta'}</h3>
         </div>
         <nav className="admin-nav">
-          <button className={activeView === 'stats' ? 'active' : ''} onClick={() => setActiveView('stats')}>
-            <span className="icon">📊</span> 
-            <span className="label">Resumen</span>
-          </button>
+          {isGlobalAdmin && (
+            <button className={activeView === 'stats' ? 'active' : ''} onClick={() => setActiveView('stats')}>
+              <span className="icon">📊</span> 
+              <span className="label">Resumen</span>
+            </button>
+          )}
           <button className={activeView === 'booths' ? 'active' : ''} onClick={() => setActiveView('booths')}>
             <span className="icon">🛖</span> 
-            <span className="label">Casetas</span>
+            <span className="label">{isGlobalAdmin ? 'Casetas' : 'Mi Datos'}</span>
           </button>
           <button className={activeView === 'users' ? 'active' : ''} onClick={() => setActiveView('users')}>
             <span className="icon">👥</span> 
@@ -78,17 +91,19 @@ const AdminDashboard = ({ casetas, onAddCaseta }) => {
             <span className="icon">⚖️</span> 
             <span className="label">Peticiones</span>
           </button>
-          <button className={activeView === 'add' ? 'active' : ''} onClick={() => { setActiveView('add'); setEditingCaseta(null); }}>
-            <span className="icon">➕</span> 
-            <span className="label">Nueva</span>
-          </button>
+          {isGlobalAdmin && (
+            <button className={activeView === 'add' ? 'active' : ''} onClick={() => { setActiveView('add'); setEditingCaseta(null); }}>
+              <span className="icon">➕</span> 
+              <span className="label">Nueva</span>
+            </button>
+          )}
         </nav>
       </aside>
 
       {/* Main Content Area */}
       <main className="admin-main-content">
         
-        {activeView === 'stats' && (
+        {activeView === 'stats' && isGlobalAdmin && (
           <div className="admin-view fade-in">
             <h2 className="premium-title">Estado del Real</h2>
             <div className="stats-grid">
@@ -128,7 +143,7 @@ const AdminDashboard = ({ casetas, onAddCaseta }) => {
 
         {activeView === 'booths' && (
           <div className="admin-view fade-in">
-            <h2 className="premium-title">Gestión de Inventario</h2>
+            <h2 className="premium-title">{isGlobalAdmin ? 'Gestión de Inventario' : `Gestión de ${casetas[0]?.nombre || 'Mi Caseta'}`}</h2>
             <div className="admin-table-wrapper glass-panel">
               <table className="admin-table">
                 <thead>
@@ -149,7 +164,9 @@ const AdminDashboard = ({ casetas, onAddCaseta }) => {
                       <td><span className={`badge ${c.clase.toLowerCase()}`}>{c.clase}</span></td>
                       <td className="actions-cell">
                         <button className="action-btn-mini edit-btn-mini" onClick={() => handleEditClick(c)} title="Editar">✏️</button>
-                        <button className="action-btn-mini delete-btn-mini" onClick={() => handleDeleteCaseta(c.id)} title="Eliminar">🗑️</button>
+                        {isGlobalAdmin && (
+                          <button className="action-btn-mini delete-btn-mini" onClick={() => handleDeleteCaseta(c.id)} title="Eliminar">🗑️</button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -164,7 +181,7 @@ const AdminDashboard = ({ casetas, onAddCaseta }) => {
 
         {activeView === 'users' && (
           <div className="admin-view fade-in">
-            <h2 className="premium-title">Directorio de Socios</h2>
+            <h2 className="premium-title">{isGlobalAdmin ? 'Directorio de Socios' : 'Mis Socios'}</h2>
             <div className="admin-table-wrapper glass-panel">
               <table className="admin-table">
                 <thead>
@@ -189,7 +206,7 @@ const AdminDashboard = ({ casetas, onAddCaseta }) => {
                         >
                           <option value={ROLES.NORMAL}>Socio</option>
                           <option value={ROLES.PRESIDENTE}>Presidente</option>
-                          <option value={ROLES.GLOBAL_ADMIN}>Admin Global</option>
+                          {isGlobalAdmin && <option value={ROLES.GLOBAL_ADMIN}>Admin Global</option>}
                         </select>
                       </td>
                       <td>
@@ -198,11 +215,11 @@ const AdminDashboard = ({ casetas, onAddCaseta }) => {
                         </span>
                       </td>
                       <td>
-                        <div style={{display: 'flex', gap: '0.5rem'}}>
+                        <div style={{display: 'flex', gap: '0.6rem', alignItems: 'center'}}>
                           {!s.approved && (
-                            <button className="action-link text-green" onClick={() => boothService.approveSocio(s.id)}>Aprobar</button>
+                            <button className="premium-btn" style={{padding: '0.4rem 1rem', fontSize: '0.7rem', minHeight: 'auto'}} onClick={() => boothService.approveSocio(s.id)}>Aprobar</button>
                           )}
-                          <button className="action-link text-red" onClick={() => boothService.detachSocioFromCaseta(s.id)}>Expulsar</button>
+                          <button className="premium-btn-danger" onClick={() => boothService.detachSocioFromCaseta(s.id)}>EXPULSAR</button>
                         </div>
                       </td>
                     </tr>
@@ -215,11 +232,11 @@ const AdminDashboard = ({ casetas, onAddCaseta }) => {
 
         {activeView === 'requests' && (
           <div className="admin-view fade-in">
-            <AdminApproval casetas={casetas} />
+            <AdminApproval casetas={allCasetas} currentUser={currentUser} />
           </div>
         )}
 
-        {activeView === 'add' && (
+        {activeView === 'add' && (isGlobalAdmin || editingCaseta) && (
           <div className="admin-view fade-in">
             <AddCasetaForm 
               onAdd={onAddCaseta} 

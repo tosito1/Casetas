@@ -3,22 +3,28 @@ import './AdminApproval.css';
 import { boothService } from '../services/boothService';
 import { ROLES } from '../data/data';
 
-const AdminApproval = ({ casetas }) => {
-  const [requests, setRequests] = useState([]);
+const AdminApproval = ({ casetas, currentUser }) => {
+  const [allRequests, setAllRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const isGlobalAdmin = currentUser?.rol === ROLES.GLOBAL_ADMIN;
 
   useEffect(() => {
     const fetchRequests = async () => {
       const fetched = await boothService.getPendingRequests();
-      setRequests(fetched);
+      setAllRequests(fetched);
       setLoading(false);
     };
     fetchRequests();
   }, []);
 
+  // Filter requests based on user role
+  const requests = isGlobalAdmin 
+    ? allRequests 
+    : allRequests.filter(r => r.casetaId === currentUser?.casetaId);
+
   const handleAction = async (requestId, status, socioData = null) => {
     await boothService.updateRequestStatus(requestId, status, socioData);
-    setRequests(requests.filter(r => r.id !== requestId));
+    setAllRequests(prev => prev.filter(r => r.id !== requestId));
     alert(`Solicitud ${status === 'aprobado' ? 'Aprobada' : 'Rechazada'} con éxito.`);
   };
 

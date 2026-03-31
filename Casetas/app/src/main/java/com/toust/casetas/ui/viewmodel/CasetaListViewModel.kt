@@ -7,8 +7,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.toust.casetas.data.model.Caseta
 import com.toust.casetas.data.repository.BoothRepository
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -22,6 +26,35 @@ class CasetaListViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
+    
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
+    
+    private val _selectedFilter = MutableStateFlow("TODAS")
+    val selectedFilter = _selectedFilter.asStateFlow()
+
+    val filteredCasetas = combine(casetas, _searchQuery, _selectedFilter) { allCasetas, query, filter ->
+        val trimmedQuery = query.trim()
+        allCasetas.filter { caseta ->
+            val matchesQuery = trimmedQuery.isBlank() || 
+                             caseta.nombre.contains(trimmedQuery, ignoreCase = true) || 
+                             caseta.calle.contains(trimmedQuery, ignoreCase = true)
+            val matchesFilter = filter == "TODAS" || caseta.clase.uppercase() == filter.uppercase()
+            matchesQuery && matchesFilter
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
+    fun onSearchQueryChange(newQuery: String) {
+        _searchQuery.value = newQuery
+    }
+
+    fun onFilterChange(newFilter: String) {
+        _selectedFilter.value = newFilter
+    }
 
     val liveUsers: StateFlow<List<com.toust.casetas.data.model.LiveUser>> = repository.observeLiveUsers()
         .stateIn(

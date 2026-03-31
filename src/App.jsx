@@ -42,6 +42,10 @@ function App() {
   const [isMapEditting, setIsMapEditting] = useState(false);
   const [globalConfig, setGlobalConfig] = useState({ activeMap: 'sanjuan' });
   const [isTracking, setIsTracking] = useState(true);
+  const [isLegendExpanded, setIsLegendExpanded] = useState(false);
+  const [isOutsideUsersExpanded, setIsOutsideUsersExpanded] = useState(false);
+  const [isBoothListExpanded, setIsBoothListExpanded] = useState(false);
+  const mapRef = useRef(null);
 
   // Sync Auth State & Profile Reactivity
   useEffect(() => {
@@ -249,7 +253,43 @@ function App() {
 
           {activeTab === 'map' && (
                 <div className="fade-in">
+                  {currentUser?.rol === ROLES.GLOBAL_ADMIN && (
+                    <div className="map-header-actions">
+                      <div className="admin-map-switcher">
+                        <button 
+                          className={globalConfig.activeMap === 'sanjuan' ? 'active' : ''} 
+                          onClick={() => boothService.updateGlobalConfig({ activeMap: 'sanjuan' })}
+                        >
+                          📍 SAN JUAN
+                        </button>
+                        <button 
+                          className={globalConfig.activeMap === 'feria' ? 'active' : ''} 
+                          onClick={() => boothService.updateGlobalConfig({ activeMap: 'feria' })}
+                        >
+                          🎡 FERIA
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {!currentUser && (
+                    <div className="feature-discovery-hud glass-panel fade-in">
+                       <p className="discovery-text">✨ Bienvenido al Real. Descubre todas nuestras funciones:</p>
+                       <div className="discovery-actions">
+                          <div className="discovery-btn" onClick={() => setActiveTab('map')}>
+                             <span className="icon">🗺️</span>
+                             <span className="label">MAPA</span>
+                          </div>
+                          <div className="discovery-btn" onClick={() => setActiveTab('list')}>
+                             <span className="icon">🎪</span>
+                             <span className="label">CASETAS</span>
+                          </div>
+                       </div>
+                    </div>
+                  )}
+
                   <InteractiveMap 
+                    ref={mapRef}
                     casetas={casetas} 
                     onSelectCaseta={handleSelectCaseta} 
                     currentUser={currentUser}
@@ -268,24 +308,105 @@ function App() {
                     }}
                   />
 
+                  {/* LEYENDA DEL REAL (Footer relocated & Collapsible) */}
+                  <div className="map-footer-collapsible glass-panel fade-in">
+                    <div className="collapsible-header" onClick={() => setIsLegendExpanded(!isLegendExpanded)}>
+                      <div className="header-title">
+                        <span className="icon">📜</span>
+                        <h4 className="text-gold">LEYENDA DEL REAL</h4>
+                      </div>
+                      <span className={`chevron ${isLegendExpanded ? 'up' : 'down'}`}>▼</span>
+                    </div>
+                    
+                    {isLegendExpanded && (
+                      <div className="map-footer-legend fade-in">
+                        <div className="legend-footer-section">
+                          <span className="legend-footer-title">Casetas</span>
+                          <div className="legend-footer-items">
+                            <div className="l-item"><div className="swatch-stripe red"></div> <span>Pública</span></div>
+                            <div className="l-item"><div className="swatch-stripe green"></div> <span>Privada</span></div>
+                            <div className="l-item"><div className="swatch-stripe yellow"></div> <span>Peña</span></div>
+                          </div>
+                        </div>
+                        
+                        <div className="legend-footer-divider"></div>
+
+                        <div className="legend-footer-section">
+                          <span className="legend-footer-title">Interés</span>
+                          <div className="legend-footer-items">
+                            <div className="l-item"><span>🏛️</span> <span>Municipal</span></div>
+                            <div className="l-item"><span>🚑</span> <span>Cruz Roja</span></div>
+                            <div className="l-item"><span>🚻</span> <span>Servicios</span></div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* LISTADO DE CASETAS (Collapsible) */}
+                  <div className="map-footer-collapsible glass-panel fade-in" style={{marginTop: '1rem'}}>
+                    <div className="collapsible-header" onClick={() => setIsBoothListExpanded(!isBoothListExpanded)}>
+                      <div className="header-title">
+                        <span className="icon">🏛️</span>
+                        <h4 className="text-gold">LISTADO DE CASETAS</h4>
+                        <span className="count-badge">{casetas.length}</span>
+                      </div>
+                      <span className={`chevron ${isBoothListExpanded ? 'up' : 'down'}`}>▼</span>
+                    </div>
+
+                    {isBoothListExpanded && (
+                      <div className="map-booth-list fade-in">
+                        <div className="booth-list-grid">
+                          {casetas.sort((a,b) => a.numero - b.numero).map(caseta => (
+                            <div key={caseta.id} className="booth-list-card glass-panel">
+                              <div className="card-info">
+                                <span className={`badge-pill ${caseta.clase.toLowerCase()}`}>{caseta.numero}</span>
+                                <div className="name-group">
+                                  <h6>{caseta.nombre}</h6>
+                                  <p>{caseta.calle}</p>
+                                </div>
+                              </div>
+                              <button className="view-btn icon-only" onClick={() => {
+                                setIsBoothListExpanded(false);
+                                mapRef.current.selectAndZoom(caseta);
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }} title="Ver en Mapa">
+                                📍
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   {/* SECCIÓN APARTE: Usuarios fuera del recinto - Solo para socios */}
                   {currentUser && liveUsers.filter(u => u.isOutside).length > 0 && (
-                    <div className="outside-users-section glass-panel fade-in" style={{marginTop: '1.5rem', padding: '1.5rem', border: '1px solid var(--glass-border)'}}>
-                      <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem'}}>
-                        <h4 className="text-gold" style={{margin: 0, fontFamily: 'var(--font-serif)', fontSize: '1.1rem', letterSpacing: '2px'}}>🛰️ SOCIOS FUERA DEL RECINTO</h4>
-                        <span className="text-muted" style={{fontSize: '0.8rem'}}>{liveUsers.filter(u => u.isOutside).length} detectados</span>
+                    <div className="outside-users-collapsible glass-panel fade-in" style={{marginTop: '1.5rem', border: '1px solid var(--glass-border)'}}>
+                      <div className="collapsible-header" onClick={() => setIsOutsideUsersExpanded(!isOutsideUsersExpanded)}>
+                        <div className="header-title">
+                          <span className="icon">🛰️</span>
+                          <h4 className="text-gold">SOCIOS FUERA DEL RECINTO</h4>
+                          <span className="count-badge">{liveUsers.filter(u => u.isOutside).length}</span>
+                        </div>
+                        <span className={`chevron ${isOutsideUsersExpanded ? 'up' : 'down'}`}>▼</span>
                       </div>
-                      <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem'}}>
-                         {liveUsers.filter(u => u.isOutside).map(u => (
-                            <div key={u.id || u.uid} className="glass-panel" style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '1rem', background: 'rgba(255,215,0,0.03)'}}>
-                               <div className="user-dot-pulse" style={{width: '8px', height: '8px', background: 'red', borderRadius: '50%', boxShadow: '0 0 10px red'}}></div>
-                               <div style={{display: 'flex', flexDirection: 'column'}}>
-                                  <span style={{fontWeight: 800, fontSize: '0.9rem'}}>{u.name}</span>
-                                  <span style={{fontSize: '0.6rem', color: 'var(--text-muted)', textTransform: 'uppercase'}}>Fuera de alcance</span>
-                               </div>
-                            </div>
-                         ))}
-                      </div>
+
+                      {isOutsideUsersExpanded && (
+                        <div className="outside-users-section fade-in" style={{padding: '1.5rem'}}>
+                          <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem'}}>
+                             {liveUsers.filter(u => u.isOutside).map(u => (
+                                <div key={u.id || u.uid} className="glass-panel" style={{display: 'flex', alignItems: 'center', gap: '12px', padding: '1rem', background: 'rgba(255,215,0,0.03)'}}>
+                                   <div className="user-dot-pulse" style={{width: '8px', height: '8px', background: 'red', borderRadius: '50%', boxShadow: '0 0 10px red'}}></div>
+                                   <div style={{display: 'flex', flexDirection: 'column'}}>
+                                      <span style={{fontWeight: 800, fontSize: '0.9rem'}}>{u.name}</span>
+                                      <span style={{fontSize: '0.6rem', color: 'var(--text-muted)', textTransform: 'uppercase'}}>Fuera de alcance</span>
+                                   </div>
+                                </div>
+                             ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -333,8 +454,8 @@ function App() {
                 )
               )}
 
-              {activeTab === 'admin-suite' && currentUser && currentUser.rol === ROLES.GLOBAL_ADMIN && (
-                <AdminDashboard casetas={casetas} onAddCaseta={handleAddCaseta} />
+              {activeTab === 'admin-suite' && currentUser && (currentUser.rol === ROLES.GLOBAL_ADMIN || currentUser.rol === ROLES.PRESIDENTE || currentUser.rol === ROLES.TESORERO) && (
+                <AdminDashboard casetas={casetas} onAddCaseta={handleAddCaseta} currentUser={currentUser} />
               )}
 
               {(activeTab === 'my-booth' && currentUser && (currentUser.approved || currentUser.rol === ROLES.GLOBAL_ADMIN)) && (

@@ -37,6 +37,7 @@ import com.google.android.libraries.identity.googleid.*
 import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalContext
 import android.app.Activity
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.material.icons.filled.AccountCircle
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 
@@ -242,13 +243,18 @@ fun AuthScreen(
                                     }
                                 }
                             },
-                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            modifier = Modifier.fillMaxWidth().height(54.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Black),
-                            shape = MaterialTheme.shapes.medium
+                            shape = MaterialTheme.shapes.medium,
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
                         ) {
-                            Icon(Icons.Default.AccountCircle, contentDescription = null, modifier = Modifier.size(20.dp), tint = Color(0xFF4285F4))
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_google_logo),
+                                contentDescription = null,
+                                modifier = Modifier.size(22.dp)
+                            )
                             Spacer(Modifier.width(12.dp))
-                            Text("Continuar con Google", style = MaterialTheme.typography.labelLarge)
+                            Text("Continuar con Google", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
                         }
 
                         // Apple Button
@@ -274,13 +280,19 @@ fun AuthScreen(
                                     }
                                 }
                             },
-                            modifier = Modifier.fillMaxWidth().height(50.dp),
+                            modifier = Modifier.fillMaxWidth().height(54.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = Color.Black, contentColor = Color.White),
-                            shape = MaterialTheme.shapes.medium
+                            shape = MaterialTheme.shapes.medium,
+                            border = BorderStroke(1.dp, Color.White.copy(alpha = 0.1f)),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
                         ) {
-                            Icon(Icons.Default.AccountCircle, contentDescription = null, modifier = Modifier.size(20.dp))
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_apple_logo),
+                                contentDescription = null,
+                                modifier = Modifier.size(22.dp)
+                            )
                             Spacer(Modifier.width(12.dp))
-                            Text("Continuar con Apple", style = MaterialTheme.typography.labelLarge)
+                            Text("Continuar con Apple", style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold))
                         }
                     }
                 }

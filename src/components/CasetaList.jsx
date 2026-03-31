@@ -9,6 +9,19 @@ const CasetaList = ({ casetas, onSelectCaseta, currentUser, onNavigate }) => {
         <p>Encuentra la caseta perfecta para disfrutar de la feria.</p>
       </div>
 
+      {!currentUser && (
+        <div className="guest-access-warning fade-in">
+          <div className="warning-content">
+            <span className="warning-icon">🔐</span>
+            <div className="warning-text">
+              <h4>Acceso de Invitado</h4>
+              <p>Estás viendo el listado público. Para interactuar, ver consumos o solicitar acceso, debes iniciar sesión.</p>
+            </div>
+            <button className="premium-btn mini" onClick={() => onNavigate('login')}>Entrar</button>
+          </div>
+        </div>
+      )}
+
       <div className="caseta-grid">
         {casetas.map(caseta => {
           const isMember = currentUser?.casetaId === caseta.id;
@@ -19,7 +32,8 @@ const CasetaList = ({ casetas, onSelectCaseta, currentUser, onNavigate }) => {
               key={caseta.id} 
               className={`card ${isMember ? 'member-highlight' : ''}`}
               onClick={() => {
-                if (isMember) onNavigate('my-booth');
+                if (!currentUser) onNavigate('login');
+                else if (isMember) onNavigate('my-booth');
                 else if (!hasBooth) onSelectCaseta(caseta);
               }}
             >

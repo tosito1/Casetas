@@ -8,9 +8,13 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Business
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -30,6 +34,7 @@ import com.toust.casetas.ui.components.GlassmorphismCard
 import com.toust.casetas.ui.theme.Gold
 import com.toust.casetas.ui.viewmodel.CasetaListViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CasetaListScreen(
     viewModel: CasetaListViewModel = viewModel(),
@@ -39,12 +44,18 @@ fun CasetaListScreen(
     currentCasetaId: String? = null,
     onNavigateToMyBooth: () -> Unit
 ) {
-    val casetas by viewModel.casetas.collectAsState()
+    val casetas by viewModel.filteredCasetas.collectAsState(initial = emptyList())
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val selectedFilter by viewModel.selectedFilter.collectAsState()
     
     AnimatedContent(targetState = viewModel.selectedCaseta == null) { isBrowsing ->
         if (isBrowsing) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Column(modifier = Modifier.padding(24.dp)) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .statusBarsPadding()
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp)) {
                     Text(
                         "NUESTRAS CASETAS",
                         style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Black),
@@ -55,24 +66,127 @@ fun CasetaListScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.White.copy(alpha = 0.6f)
                     )
+                    
+                    Spacer(Modifier.height(24.dp))
+
+                    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { viewModel.onSearchQueryChange(it) },
+                            modifier = Modifier.weight(1f),
+                            placeholder = { Text("Buscar por nombre o calle...", color = Color.White.copy(alpha = 0.3f)) },
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Gold) },
+                            trailingIcon = { 
+                                if (searchQuery.isNotEmpty()) {
+                                    IconButton(onClick = { viewModel.onSearchQueryChange("") }) {
+                                        Icon(Icons.Default.Close, contentDescription = null, tint = Gold)
+                                    }
+                                }
+                            },
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Gold,
+                                unfocusedBorderColor = Color.White.copy(alpha = 0.1f),
+                                focusedContainerColor = Color.White.copy(alpha = 0.05f),
+                                unfocusedContainerColor = Color.White.copy(alpha = 0.05f),
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true,
+                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                                imeAction = androidx.compose.ui.text.input.ImeAction.Search
+                            ),
+                            keyboardActions = androidx.compose.foundation.text.KeyboardActions(
+                                onSearch = { focusManager.clearFocus() }
+                            )
+                        )
+
+                        Surface(
+                            onClick = { focusManager.clearFocus() },
+                            color = Gold,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.size(56.dp),
+                            tonalElevation = 2.0.dp,
+                            shadowElevation = 4.0.dp
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(Icons.Default.Search, contentDescription = "Buscar", tint = Color.Black)
+                            }
+                        }
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf("TODAS", "PÚBLICA", "PRIVADA", "PEÑA").forEach { filter ->
+                            val isSelected = selectedFilter == filter
+                            FilterChip(
+                                selected = isSelected,
+                                onClick = { viewModel.onFilterChange(filter) },
+                                label = { Text(filter) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Gold,
+                                    selectedLabelColor = Color.Black,
+                                    containerColor = Color.White.copy(alpha = 0.05f),
+                                    labelColor = Color.White.copy(alpha = 0.6f)
+                                ),
+                                border = FilterChipDefaults.filterChipBorder(
+                                    enabled = true,
+                                    selected = isSelected,
+                                    borderColor = Color.White.copy(alpha = 0.1f),
+                                    selectedBorderColor = Gold
+                                )
+                            )
+                        }
+                    }
                 }
 
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(1),
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    items(casetas) { caseta ->
-                        val isMember = currentCasetaId == caseta.id
-                        CasetaListItem(
-                            caseta = caseta,
-                            isMember = isMember,
-                            onClick = {
-                                if (isMember) onNavigateToMyBooth()
-                                else if (currentCasetaId.isNullOrBlank()) viewModel.selectedCaseta = caseta
-                            }
+                if (casetas.isEmpty() && searchQuery.isNotEmpty()) {
+                    Column(
+                        modifier = Modifier.fillMaxSize().padding(40.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text("🔍", fontSize = 48.sp)
+                        Text(
+                            "No se encontró ninguna caseta",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = Color.White,
+                            modifier = Modifier.padding(top = 16.dp)
                         )
+                        Text(
+                            "Prueba con otros términos o filtros.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color.White.copy(alpha = 0.4f)
+                        )
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(1),
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 80.dp, top = 0.dp, start = 16.dp, end = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        items(casetas) { caseta ->
+                            val isMember = currentCasetaId == caseta.id
+                            CasetaListItem(
+                                caseta = caseta,
+                                isMember = isMember,
+                                onClick = {
+                                    if (isMember) onNavigateToMyBooth()
+                                    else if (currentCasetaId.isNullOrBlank()) viewModel.selectedCaseta = caseta
+                                }
+                            )
+                        }
                     }
                 }
             }
@@ -172,7 +286,7 @@ fun JoinRequestFormScreen(
     
     Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
         IconButton(onClick = onBack) {
-            Icon(Icons.Default.ArrowBack, contentDescription = "Regresar", tint = Gold)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Regresar", tint = Gold)
         }
         
         Spacer(Modifier.height(16.dp))
@@ -252,7 +366,7 @@ fun JoinRequestFormScreen(
                         if (viewModel.isSubmittingRequest) {
                             CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.Black)
                         } else {
-                            Icon(Icons.Default.Send, contentDescription = null)
+                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null)
                             Spacer(Modifier.width(12.dp))
                             Text("ENVIAR PETICIÓN")
                         }

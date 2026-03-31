@@ -26,30 +26,31 @@ const Navbar = ({ activeTab, setActiveTab, currentUser, onLogout }) => {
           <h1>Mi <span className="highlight">Caseta</span></h1>
         </div>
 
-        <div className="hamburger-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-          <div className={`hamburger-icon ${isMobileMenuOpen ? 'open' : ''}`}>
-            <span></span>
-            <span></span>
-            <span></span>
+        <div className="nav-mobile-actions">
+          <div className="hamburger-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+            <div className={`hamburger-icon ${isMobileMenuOpen ? 'open' : ''}`}>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <span className="menu-label hide-mobile">MENÚ</span>
           </div>
         </div>
         
         <div className={`nav-links ${isMobileMenuOpen ? 'open' : ''}`}>
+          <button 
+            className={`nav-item ${activeTab === 'list' ? 'active' : ''}`}
+            onClick={() => handleNavClick('list')}
+          >
+            🎪 <span className="nav-text">Casetas</span>
+          </button>
+
           <button 
             className={`nav-item ${activeTab === 'map' ? 'active' : ''}`}
             onClick={() => handleNavClick('map')}
           >
             🗺️ <span className="nav-text">El Real</span>
           </button>
-          
-          {currentUser && (
-            <button 
-              className={`nav-item ${activeTab === 'list' ? 'active' : ''}`}
-              onClick={() => handleNavClick('list')}
-            >
-              🎪 <span className="nav-text">Explorar</span>
-            </button>
-          )}
           
           {isMember && (
             <button 
@@ -69,12 +70,12 @@ const Navbar = ({ activeTab, setActiveTab, currentUser, onLogout }) => {
             </button>
           )}
 
-          {isGlobalAdmin && (
+          {(isGlobalAdmin || currentUser?.rol === ROLES.PRESIDENTE || currentUser?.rol === ROLES.TESORERO) && (
             <button 
               className={`nav-item admin-btn ${activeTab === 'admin-suite' ? 'active' : ''}`}
               onClick={() => handleNavClick('admin-suite')}
             >
-              🛡️ <span className="nav-text">Admin</span>
+              🛡️ <span className="nav-text">{isGlobalAdmin ? 'Admin' : 'Gestión'}</span>
             </button>
           )}
         </div>

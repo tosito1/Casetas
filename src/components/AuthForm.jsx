@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AuthForm.css';
 import { 
   signInWithEmailAndPassword, 
@@ -14,6 +14,14 @@ const AuthForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isRegister, setIsRegister] = useState(false);
+  const [showAppleGuide, setShowAppleGuide] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+
+  useEffect(() => {
+    const ua = window.navigator.userAgent;
+    const isIosDevice = /iPhone|iPad|iPod/i.test(ua);
+    setIsIOS(isIosDevice);
+  }, []);
 
   const handleEmailAuth = async (e) => {
     e.preventDefault();
@@ -138,7 +146,77 @@ const AuthForm = () => {
               <span>Apple ID</span>
             </button>
           </div>
+          <div className="auth-app-download">
+             <div className="auth-divider"><span>Acceso Total</span></div>
+             <div className="download-grid">
+               <a 
+                 href="https://drive.google.com/file/d/1C4zFjgMjmbwEJTxDnmgHSXYcXIyhJOxs/view?usp=sharing" 
+                 target="_blank" 
+                 rel="noopener noreferrer"
+                 className="app-download-btn android-btn pulse-glow"
+               >
+                  <span className="btn-icon">🤖</span>
+                  <div className="btn-text">
+                    <span className="small">Descarga Directa</span>
+                    <span className="bold">Android App</span>
+                  </div>
+               </a>
+
+               <button 
+                 className={`app-download-btn apple-btn ${isIOS ? 'highlight' : ''}`}
+                 onClick={() => setShowAppleGuide(true)}
+               >
+                  <svg className="premium-apple-icon-svg" viewBox="0 0 384 512" width="24" height="24">
+                    <path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
+                  </svg>
+                  <div className="btn-text">
+                    <span className="small">Instalar en Home</span>
+                    <span className="bold">PWA for Apple</span>
+                  </div>
+               </button>
+             </div>
+          </div>
         </>
+
+        {showAppleGuide && (
+          <div className="install-guide-overlay fade-in" onClick={() => setShowAppleGuide(false)}>
+            <div className="install-guide-modal glass-panel" onClick={e => e.stopPropagation()}>
+              <button className="close-guide" onClick={() => setShowAppleGuide(false)}>×</button>
+              <div className="guide-header">
+                <svg className="premium-apple-icon-svg lg" viewBox="0 0 384 512" width="64" height="64">
+                    <path fill="currentColor" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
+                </svg>
+                <h3>Instalar en tu iPhone</h3>
+              </div>
+              <div className="guide-steps">
+                <div className="step">
+                  <div className="step-number">1</div>
+                  <div className="step-content">
+                    <p>Pulsa el botón de <strong>Compartir</strong> en Safari.</p>
+                    <img src="/ios-share-icon.png" alt="Safari Share" className="safari-icon" />
+                  </div>
+                </div>
+                <div className="step">
+                  <div className="step-number">2</div>
+                  <div className="step-content">
+                    <p>Busca en el menú la opción <strong>"Añadir a la pantalla de inicio"</strong>.</p>
+                    <div className="step-preview">
+                       <img src="/app_icon.png" alt="Preview" className="preview-icon" />
+                       <span className="preview-text">Añadir a la pantalla de inicio</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="step">
+                  <div className="step-number">3</div>
+                  <div className="step-content">
+                    <p>Pulsa <strong>Añadir</strong> en la esquina superior derecha.</p>
+                  </div>
+                </div>
+              </div>
+              <p className="guide-footer text-gold">¡Ya puedes disfrutar de Mi Caseta como una app nativa!</p>
+            </div>
+          </div>
+        )}
 
         <div className="auth-footer">
           <p>© 2025 Feria App • Gestión Premium de Casetas</p>

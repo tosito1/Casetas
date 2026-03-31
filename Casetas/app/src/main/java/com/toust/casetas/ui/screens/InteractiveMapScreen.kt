@@ -17,7 +17,9 @@ import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.drawscope.*
@@ -30,6 +32,7 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -63,6 +66,7 @@ fun InteractiveMapScreen(
     onBack: () -> Unit
 ) {
     BackHandler { onBack() }
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
     
     val casetas by viewModel.casetas.collectAsState()
     val liveUsers by viewModel.liveUsers.collectAsState()
@@ -74,9 +78,38 @@ fun InteractiveMapScreen(
     var visibleTypes by remember { mutableStateOf(setOf("Privada", "Publica", "Peña")) }
     var initialCentered by remember { mutableStateOf(false) }
     var showOutsideUsers by remember { mutableStateOf(false) }
+    var containerSize by remember { mutableStateOf(Size.Zero) }
 
     val config: MapConfig = if (selectedEvent == "feria") FeriaConfig else SanJuanConfig
     val scope = rememberCoroutineScope()
+
+    // ZOOM TO BOOTH LOGIC
+    fun zoomToBooth(query: String) {
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) return
+        
+        // Find by number or name
+        val targetBooth = config.boothDefinitions.find { def ->
+            val realCaseta = casetas.find { it.numero == def.id.toString() }
+            def.id.toString().equals(trimmed, ignoreCase = true) || 
+            (realCaseta?.nombre?.contains(trimmed, ignoreCase = true) == true)
+        }
+
+        targetBooth?.let { def ->
+            scope.launch {
+                val targetScale = 2.5f
+                // Center booth on screen
+                // ScreenCenter - (BoothPoint * TargetScale)
+                val targetOffset = Offset(
+                    x = (containerSize.width / 2f) - (def.x + def.w / 2f) * targetScale,
+                    y = (containerSize.height / 2f) - (def.y + def.h / 2f) * targetScale
+                )
+                
+                launch { animatedScale.animateTo(targetScale, tween(800, easing = FastOutSlowInEasing)) }
+                launch { animatedMapOffset.animateTo(targetOffset, tween(800, easing = FastOutSlowInEasing)) }
+            }
+        }
+    }
     
     // Pulse animation for radar
     val infiniteTransition = rememberInfiniteTransition(label = "RadarPulse")
@@ -139,6 +172,7 @@ fun InteractiveMapScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .onGloballyPositioned { containerSize = Size(it.size.width.toFloat(), it.size.height.toFloat()) }
                 .pointerInput(Unit) {
                     detectTransformGestures { _, pan, zoom, _ ->
                         val currentScale = animatedScale.value
@@ -431,36 +465,66 @@ fun InteractiveMapScreen(
             }
         }
 
-        Box(Modifier.fillMaxWidth().padding(16.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .statusBarsPadding()
+                .padding(top = 28.dp)
+                .padding(horizontal = 16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Surface(
                     onClick = onBack,
-                    color = Color.Black.copy(0.6f),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(0.1f)),
-                    shape = androidx.compose.foundation.shape.CircleShape,
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 8.dp,
+                    shadowElevation = 6.dp,
+                    shape = CircleShape,
                     modifier = Modifier.size(48.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Close, contentDescription = null, tint = Gold, modifier = Modifier.size(24.dp))
+                        Icon(androidx.compose.material.icons.Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver", tint = Gold)
                     }
                 }
+                
+                Spacer(Modifier.width(12.dp))
                 
                 com.toust.casetas.ui.components.GlassmorphismCard(
                     modifier = Modifier.weight(1f).height(48.dp)
                 ) {
-                    Row(Modifier.fillMaxSize().padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Search, contentDescription = null, tint = TextSecondary, modifier = Modifier.size(20.dp))
+                    Row(
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = { zoomToBooth(searchQuery) }, modifier = Modifier.size(24.dp)) {
+                            Icon(androidx.compose.material.icons.Icons.Default.Search, contentDescription = null, tint = Gold, modifier = Modifier.size(20.dp))
+                        }
                         Spacer(Modifier.width(8.dp))
                         BasicTextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            textStyle = androidx.compose.ui.text.TextStyle(color = TextPrimary, fontSize = 14.sp),
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.weight(1f),
+                            textStyle = androidx.compose.ui.text.TextStyle(color = Color.White, fontSize = 14.sp),
+                            singleLine = true,
+                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Search),
+                            keyboardActions = androidx.compose.foundation.text.KeyboardActions(onSearch = { 
+                                zoomToBooth(searchQuery)
+                                focusManager.clearFocus()
+                            }),
                             decorationBox = { innerTextField ->
-                                if (searchQuery.isEmpty()) Text("Buscar caseta...", color = TextSecondary, fontSize = 14.sp)
+                                if (searchQuery.isEmpty()) {
+                                    Text("Buscar caseta...", color = Color.White.copy(alpha = 0.4f), fontSize = 14.sp)
+                                }
                                 innerTextField()
                             }
                         )
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { searchQuery = "" }, modifier = Modifier.size(24.dp)) {
+                                Icon(androidx.compose.material.icons.Icons.Default.Close, contentDescription = null, tint = Gold)
+                            }
+                        }
                     }
                 }
             }
